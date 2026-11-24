@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rosalia Indah - RESTful API & Deployment Uji Coba</title>
+  <style>
+    :root {
+      --primary: #c41212;
+      --primary-dark: #960c0c;
+      --secondary: #1a202c;
+      --accent: #e53e3e;
+      --bg: #f7fafc;
+      --card-bg: #ffffff;
+      --text: #2d3748;
+      --text-muted: #718096;
+      --border: #e2e8f0;
+      --success: #38a169;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 0;
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.2);
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-success {
+      background: #c6f6d5;
+      color: #22543d;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #38a169;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.4); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+    p.subtitle {
+      font-size: 1.1rem;
+      opacity: 0.95;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1.25rem;
+    }
+    .status-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    }
+    .card h3 {
+      color: var(--primary);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .endpoint-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.4rem 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 0.88rem;
+    }
+    .endpoint-item:last-child {
+      border-bottom: none;
+    }
+    .method {
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      min-width: 50px;
+      text-align: center;
+    }
+    .method-get { background: #e2e8f0; color: #2b6cb0; }
+    .method-post { background: #feebc8; color: #c05621; }
+    .method-put { background: #e9d8fd; color: #6b46c1; }
+    .method-delete { background: #fed7d7; color: #9b2c2c; }
+    .btn {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      padding: 0.6rem 1.25rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: var(--primary-dark);
+    }
+    .btn-secondary {
+      background: #2563eb;
+    }
+    .btn-secondary:hover {
+      background: #1d4ed8;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="badge">Project UAS Backend Pemrograman Aplikasi Web II</div>
+    <h1>PT. Rosalia Indah Transport</h1>
+    <p class="subtitle">RESTful API Pemesanan Tiket Bus Antarkota & Antarprovinsi berbasis Node.js Express, MongoDB Atlas, Autentikasi Stateless JWT, dan Live Fleet Tracking.</p>
+  </header>
+
+  <div class="container">
+    <div class="status-card">
+      <div>
+        <div class="badge badge-success"><span class="pulse-dot"></span> Server API Aktif</div>
+        <h2 style="font-size: 1.3rem; margin-top: 0.25rem;">Status Backend Vercel Serverless</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">Terkoneksi ke MongoDB Database (Koleksi: Users, Bus, Rute, Jadwal, Pemesanan)</p>
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="/api" class="btn" target="_blank">Dokumentasi JSON /api</a>
+        <a href="/tracking.html" class="btn btn-secondary">🗺️ Peta Live Tracking Bus</a>
+      </div>
+    </div>
+
+    <h2 style="margin-bottom: 1.25rem;">Daftar Modul & Fitur Unggulan API</h2>
+
+    <div class="grid">
+      <!-- Card Auth -->
+      <div class="card">
+        <h3>🔐 Autentikasi (JWT)</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">Autentikasi stateless menggunakan JSON Web Token (SUB-CPMK-10).</p>
+        <div class="endpoint-item"><span class="method method-post">POST</span> <code>/api/auth/register</code></div>
+        <div class="endpoint-item"><span class="method method-post">POST</span> <code>/api/auth/login</code></div>
+        <div class="endpoint-item"><span class="method method-get">GET</span> <code>/api/auth/me</code> (Bearer Token)</div>
+      </div>
+
+      <!-- Card Bus & Live Location -->
+      <div class="card">
+        <h3>🚌 Armada & Live Location</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">Armada bus & update lokasi koordinat GPS secara berkala.</p>
+        <div class="endpoint-item"><span class="method method-get">GET</span> <code>/api/bus</code></div>
+        <div class="endpoint-item"><span class="method method-get">GET</span> <code>/api/bus/:id/lokasi</code> (Publik)</div>
+        <div class="endpoint-item"><span class="method method-put">PUT</span> <code>/api/bus/:id/lokasi</code> (Admin/GPS)</div>
+        <div class="endpoint-item"><span class="method method-post">POST</span> <code>/api/bus</code> (Admin)</div>
+        <div class="endpoint-item"><span class="method method-delete">DELETE</span> <code>/api/bus/:id</code> (Admin)</div>
+      </div>
+
+      <!-- Card Rute -->
+      <div class="card">
+        <h3>🛣️ Rute / Trayek</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">Trayek antarkota/antarprovinsi beserta agen keberangkatan & penurunan.</p>
+        <div class="endpoint-item"><span class="method method-get">GET</span> <code>/api/rute</code></div>
+        <div class="endpoint-item"><span class="method method-get">GET</span> <code>/api/rute/:id</code></div>
+        <div class="endpoint-item"><span class="method method-post">POST</span> <code>/api/rute</code> (Admin)</div>
+        <div class="endpoint-item"><span class="method method-put">PUT</span> <code>/api/rute/:id</code> (Admin)</div>
+        <div class="endpoint-item"><span class="method method-delete">DELETE</span> <code>/api/rute/:id</code> (Admin)</div>
+      </div>
+
+      <!-- Card Jadwal -->
+      <div class="card">
+        <h3>📅 Jadwal Keberangkatan</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">Penjadwalan bus, jam berangkat/tiba, tarif, dan ketersediaan kursi.</p>
+        <div class="endpoint-item"><span class="method method-get">GET</span> <code>/api/jadwal</code></div>
+        <div class="endpoint-item"><span class="method method-get">GET</span> <code>/api/jadwal/:id</code></div>
+        <div class="endpoint-item"><span class="method method-post">POST</span> <code>/api/jadwal</code> (Admin)</div>
+        <div class="endpoint-item"><span class="method method-put">PUT</span> <code>/api/jadwal/:id</code> (Admin)</div>
+        <div class="endpoint-item"><span class="method method-delete">DELETE</span> <code>/api/jadwal/:id</code> (Admin)</div>
+      </div>
+
+      <!-- Card Pemesanan & Share Tracking -->
+      <div class="card" style="grid-column: 1 / -1;">
+        <h3>🎫 Transaksi Pemesanan Pulang-Pergi & Share Live Tracking (Inovasi Fitur)</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">Mendukung transaksi tiket sekali jalan, pulang-pergi, maupun multi-kota dengan tautan pelacakan publik (ala GrabFood) ke keluarga/teman.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.5rem;">
+          <div class="endpoint-item"><span class="method method-get">GET</span> <code>/api/pemesanan</code> (Pelanggan/Admin)</div>
+          <div class="endpoint-item"><span class="method method-get">GET</span> <code>/api/pemesanan/:id</code> (Pelanggan/Admin)</div>
+          <div class="endpoint-item"><span class="method method-post">POST</span> <code>/api/pemesanan</code> (Booking Pulang-Pergi)</div>
+          <div class="endpoint-item"><span class="method method-put">PUT</span> <code>/api/pemesanan/:id/status</code> (Lunas/Batal)</div>
+          <div class="endpoint-item"><span class="method method-get">GET</span> <code>/api/tracking/:token</code> (Link Publik)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Proyek UAS Backend - SI5C Universitas Multi Data Palembang</p>
+    <p>Aplikasi Studi: <a href="https://www.rosalia-indah.co.id/" target="_blank" style="color: var(--primary);">PT. Rosalia Indah Transport</a></p>
+  </footer>
+</body>
+</html>

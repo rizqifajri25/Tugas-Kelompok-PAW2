@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Location Bus - Rosalia Indah Tracking</title>
+  <!-- Leaflet CSS (OpenStreetMap Gratis Tanpa API Key) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <style>
+    :root {
+      --primary: #c41212;
+      --primary-dark: #960c0c;
+      --secondary: #1a202c;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .logo-title h1 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-live {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #4ade80;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.4); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 1200px;
+      width: 100%;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+      gap: 1.5rem;
+    }
+    .tracking-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 1.5rem;
+      height: 600px;
+    }
+    @media (max-width: 860px) {
+      .tracking-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+    }
+    .panel {
+      background: var(--card-bg);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      overflow-y: auto;
+    }
+    #map {
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      height: 100%;
+      min-height: 420px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      z-index: 1;
+    }
+    .info-group {
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-group:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .info-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    .info-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .route-display {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-top: 0.25rem;
+    }
+    .status-pill {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: #dcfce7;
+      color: #166534;
+    }
+    .speed-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #f1f5f9;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 0.5rem;
+    }
+    .btn-share {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      background: #25d366;
+      color: white;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background 0.2s;
+    }
+    .btn-share:hover {
+      background: #1eb956;
+    }
+    .token-box {
+      background: #f8fafc;
+      border: 1px dashed var(--border);
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      word-break: break-all;
+      margin-top: 0.5rem;
+      user-select: all;
+    }
+    #loadingState, #errorState {
+      text-align: center;
+      padding: 3rem 1rem;
+      background: white;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-title">
+      <h1>🚌 Rosalia Indah Live Fleet Tracker</h1>
+    </div>
+    <div>
+      <span class="badge-live"><span class="pulse-dot"></span> GPS Realtime Aktif</span>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <div id="loadingState">
+      <h3>Memuat data pelacakan perjalanan...</h3>
+      <p style="color: var(--muted); margin-top: 0.5rem;">Menghubungkan ke armada bus Rosalia Indah</p>
+    </div>
+
+    <div id="errorState" style="display: none;">
+      <h3 style="color: var(--primary);">Tautan Pelacakan Tidak Ditemukan</h3>
+      <p id="errorMessage" style="color: var(--muted); margin: 0.5rem 0 1.5rem;">Token tidak valid atau pemesanan telah dibatalkan.</p>
+      <div style="max-width: 400px; margin: 0 auto; display: flex; gap: 8px;">
+        <input type="text" id="manualTokenInput" placeholder="Masukkan Token (contoh: trk_...)" style="flex: 1; padding: 0.6rem; border: 1px solid var(--border); border-radius: 8px;">
+        <button onclick="handleManualToken()" style="padding: 0.6rem 1rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">Lacak</button>
+      </div>
+    </div>
+
+    <div id="contentState" class="tracking-grid" style="display: none;">
+      <!-- Panel Informasi Perjalanan -->
+      <div class="panel">
+        <div class="info-group">
+          <div class="info-label">Kode Booking</div>
+          <div class="info-value" id="displayKodeBooking">-</div>
+          <div style="margin-top: 0.4rem;">
+            <span class="status-pill" id="displayStatusPembayaran">LUNAS</span>
+          </div>
+        </div>
+
+        <div class="info-group">
+          <div class="info-label">Rute Perjalanan</div>
+          <div class="route-display">
+            <span id="displayAsal">-</span> ➔ <span id="displayTujuan">-</span>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--muted); margin-top: 0.3rem;" id="displayTrayekDetail">-</p>
+        </div>
+
+        <div class="info-group">
+          <div class="info-label">Armada Bus</div>
+          <div class="info-value" id="displayNamaBus">-</div>
+          <div style="font-size: 0.88rem; color: var(--muted);" id="displayKelasBus">-</div>
+          <div style="font-size: 0.85rem; font-weight: 600; margin-top: 0.2rem;" id="displayPlatNomor">-</div>
+        </div>
+
+        <div class="info-group">
+          <div class="info-label">Posisi & Kecepatan Terkini</div>
+          <div class="info-value" id="displayLokasiTerkini">-</div>
+          <div class="speed-badge">
+            ⚡ Kecepatan: <span id="displayKecepatan">0</span> km/jam
+          </div>
+          <p style="font-size: 0.78rem; color: var(--muted); margin-top: 0.4rem;" id="displayUpdateWaktu">-</p>
+        </div>
+
+        <div class="info-group">
+          <div class="info-label">Tautan Publik (Bisa Dibagikan)</div>
+          <p style="font-size: 0.8rem; color: var(--muted);">Bagi keluarga/teman untuk memantau perjalanan tanpa perlu login:</p>
+          <div class="token-box" id="displayShareLink">-</div>
+          <button class="btn-share" onclick="shareWhatsApp()">
+            📲 Bagikan via WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <!-- Area Peta Leaflet OpenStreetMap -->
+      <div id="map"></div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+    let map = null;
+    let busMarker = null;
+    let currentToken = '';
+
+    // Ambil token dari parameter URL (?token=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    currentToken = urlParams.get('token') || '';
+
+    function handleManualToken() {
+      const input = document.getElementById('manualTokenInput').value.trim();
+      if (input) {
+        window.location.search = `?token=${encodeURIComponent(input)}`;
+      }
+    }
+
+    async function fetchTrackingData() {
+      if (!currentToken) {
+        showError('Silakan masukkan token pelacakan yang Anda dapatkan saat memesan tiket.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/tracking/${encodeURIComponent(currentToken)}`);
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          showError(result.message || 'Data pelacakan tidak ditemukan.');
+          return;
+        }
+
+        renderTracking(result.data);
+      } catch (err) {
+        showError('Gagal terhubung ke server: ' + err.message);
+      }
+    }
+
+    function showError(msg) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('contentState').style.display = 'none';
+      document.getElementById('errorState').style.display = 'block';
+      document.getElementById('errorMessage').textContent = msg;
+    }
+
+    function renderTracking(data) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorState').style.display = 'none';
+      document.getElementById('contentState').style.display = 'grid';
+
+      // Ambil segmen perjalanan pertama
+      const segmen = (data.perjalanan && data.perjalanan.length > 0) ? data.perjalanan[0] : null;
+      const bus = segmen ? segmen.bus : null;
+      const rute = segmen ? segmen.rute : null;
+      const lokasi = bus ? bus.lokasiTerkini : null;
+
+      // Update elemen UI
+      document.getElementById('displayKodeBooking').textContent = data.kodeBooking || '-';
+      document.getElementById('displayStatusPembayaran').textContent = (data.statusPembayaran || 'LUNAS').toUpperCase();
+      
+      if (rute) {
+        document.getElementById('displayAsal').textContent = rute.kotaAsal;
+        document.getElementById('displayTujuan').textContent = rute.kotaTujuan;
+        document.getElementById('displayTrayekDetail').textContent = `${rute.agenKeberangkatan} ➔ ${rute.agenTujuan}`;
+      }
+
+      if (bus) {
+        document.getElementById('displayNamaBus').textContent = bus.namaBus;
+        document.getElementById('displayKelasBus').textContent = bus.kelasBus;
+        document.getElementById('displayPlatNomor').textContent = `${bus.nomorPolisi} (${bus.nomorLambung})`;
+      }
+
+      const lat = (lokasi && lokasi.latitude !== undefined) ? lokasi.latitude : -6.2088;
+      const lng = (lokasi && lokasi.longitude !== undefined) ? lokasi.longitude : 106.8456;
+      const namaLok = (lokasi && lokasi.namaLokasi) ? lokasi.namaLokasi : 'Sedang dalam perjalanan';
+      const kec = (lokasi && lokasi.kecepatanKmJam !== undefined) ? lokasi.kecepatanKmJam : 0;
+      const waktu = (lokasi && lokasi.terakhirDiperbarui) ? new Date(lokasi.terakhirDiperbarui).toLocaleTimeString('id-ID') : '-';
+
+      document.getElementById('displayLokasiTerkini').textContent = namaLok;
+      document.getElementById('displayKecepatan').textContent = kec;
+      document.getElementById('displayUpdateWaktu').textContent = `Terakhir diperbarui: ${waktu} WIB`;
+
+      const shareUrl = window.location.origin + `/tracking.html?token=${currentToken}`;
+      document.getElementById('displayShareLink').textContent = shareUrl;
+
+      // Inisialisasi atau Perbarui Peta Leaflet
+      initOrUpdateMap(lat, lng, bus ? bus.namaBus : 'Bus Rosalia Indah', namaLok, kec);
+    }
+
+    function initOrUpdateMap(lat, lng, busName, namaLok, speed) {
+      if (!map) {
+        map = L.map('map').setView([lat, lng], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Custom Bus Icon
+        const busIcon = L.divIcon({
+          className: 'custom-bus-icon',
+          html: `<div style="background: #c41212; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 2px solid white;">🚌</div>`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18]
+        });
+
+        busMarker = L.marker([lat, lng], { icon: busIcon }).addTo(map);
+        busMarker.bindPopup(`<b>${busName}</b><br>${namaLok}<br>Kecepatan: ${speed} km/jam`).openPopup();
+      } else {
+        busMarker.setLatLng([lat, lng]);
+        busMarker.getPopup().setContent(`<b>${busName}</b><br>${namaLok}<br>Kecepatan: ${speed} km/jam`);
+        map.panTo([lat, lng]);
+      }
+    }
+
+    function shareWhatsApp() {
+      const shareUrl = window.location.origin + `/tracking.html?token=${currentToken}`;
+      const text = `Halo, pantau perjalanan bus Rosalia Indah saya secara langsung di sini:\n${shareUrl}`;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    // Jalankan pemuatan data awal
+    fetchTrackingData();
+
+    // Auto-refresh posisi bus setiap 8 detik (HTTP Polling ramah Vercel Serverless)
+    setInterval(() => {
+      if (currentToken && map) {
+        fetchTrackingData();
+      }
+    }, 8000);
+  </script>
+</body>
+</html>

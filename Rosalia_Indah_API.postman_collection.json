@@ -1,0 +1,623 @@
+{
+  "info": {
+    "_postman_id": "c1f7a40b-e448-4e31-9f7a-8b17351659a2",
+    "name": "Rosalia Indah - RESTful API UAS",
+    "description": "Collection Postman Lengkap RESTful API Rosalia Indah (SUB-CPMK-9 CRUD NoSQL, SUB-CPMK-10 JWT Auth, Pemesanan Pulang-Pergi, Live Location Bus, dan Share Tracking Link)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleBusId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleRuteId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleJadwalIdPergi",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleJadwalIdPulang",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "samplePemesananId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleTrackingToken",
+      "value": "trk_demo_rosalia2026",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Health & Info",
+      "item": [
+        {
+          "name": "API Info & Healthcheck",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api",
+              "host": ["{{baseUrl}}"],
+              "path": ["api"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Autentikasi (JWT)",
+      "item": [
+        {
+          "name": "Register Pengguna Baru",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"namaLengkap\": \"Fito Maulana\",\n  \"username\": \"fitomaulana2\",\n  \"email\": \"fitomaulana2@example.com\",\n  \"nomorTelepon\": \"081299887711\",\n  \"password\": \"password123\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login Admin (Auto Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "    pm.collectionVariables.set('adminToken', res.data.token);",
+                  "    console.log('Admin token saved');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login Pelanggan (Auto Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "    pm.collectionVariables.set('userToken', res.data.token);",
+                  "    console.log('User token saved');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"rizqifajri\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Profil Pengguna / Me (Protected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Armada Bus & Live Location",
+      "item": [
+        {
+          "name": "Dapatkan Semua Bus",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.length > 0) {",
+                  "    pm.collectionVariables.set('sampleBusId', res.data[0]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bus",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bus"]
+            }
+          }
+        },
+        {
+          "name": "Live Location Bus by ID [Publik]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bus/{{sampleBusId}}/lokasi",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bus", "{{sampleBusId}}", "lokasi"]
+            }
+          }
+        },
+        {
+          "name": "Update Lokasi GPS Bus [Admin / Driver]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": -6.4255,\n  \"longitude\": 107.4512,\n  \"namaLokasi\": \"Tol Cipali KM 86 Subang\",\n  \"kecepatanKmJam\": 85,\n  \"arahDerajat\": 110\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bus/{{sampleBusId}}/lokasi",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bus", "{{sampleBusId}}", "lokasi"]
+            }
+          }
+        },
+        {
+          "name": "Detail Bus by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bus/{{sampleBusId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bus", "{{sampleBusId}}"]
+            }
+          }
+        },
+        {
+          "name": "Tambah Bus Baru [Admin]",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomorPolisi\": \"AD 7010 EA\",\n  \"nomorLambung\": \"DD-105\",\n  \"namaBus\": \"Rosalia Indah Sleeper Double Decker\",\n  \"kelasBus\": \"First Class Double Decker\",\n  \"kapasitasKursi\": 26,\n  \"fasilitas\": [\"AC\", \"Sleeper Seat\", \"Personal AVOD\", \"Toilet\", \"Makan Prasmanan\", \"Free WiFi\"],\n  \"status\": \"aktif\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bus",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bus"]
+            }
+          }
+        },
+        {
+          "name": "Perbarui Bus [Admin]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"aktif\",\n  \"fasilitas\": [\"AC\", \"Reclining Seat\", \"Leg Rest\", \"Toilet\", \"WiFi\", \"Snack\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bus/{{sampleBusId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bus", "{{sampleBusId}}"]
+            }
+          }
+        },
+        {
+          "name": "Hapus Bus [Admin]",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bus/{{sampleBusId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bus", "{{sampleBusId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Rute Perjalanan",
+      "item": [
+        {
+          "name": "Dapatkan Semua Rute",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.length > 0) {",
+                  "    pm.collectionVariables.set('sampleRuteId', res.data[0]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/rute",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rute"]
+            }
+          }
+        },
+        {
+          "name": "Detail Rute by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/rute/{{sampleRuteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rute", "{{sampleRuteId}}"]
+            }
+          }
+        },
+        {
+          "name": "Tambah Rute Baru [Admin]",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kodeRute\": \"PLM-BDG\",\n  \"kotaAsal\": \"Palembang\",\n  \"kotaTujuan\": \"Bandung\",\n  \"agenKeberangkatan\": \"Agen Rosalia Indah Km.9 Palembang\",\n  \"agenTujuan\": \"Agen Cicaheum Bandung\",\n  \"jarakKm\": 630,\n  \"estimasiWaktu\": \"13 Jam\",\n  \"tarifDasar\": 370000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rute",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rute"]
+            }
+          }
+        },
+        {
+          "name": "Perbarui Rute [Admin]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tarifDasar\": 360000,\n  \"estimasiWaktu\": \"12 Jam\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rute/{{sampleRuteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rute", "{{sampleRuteId}}"]
+            }
+          }
+        },
+        {
+          "name": "Hapus Rute [Admin]",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/rute/{{sampleRuteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rute", "{{sampleRuteId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Jadwal Keberangkatan",
+      "item": [
+        {
+          "name": "Dapatkan Semua Jadwal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.length >= 2) {",
+                  "    pm.collectionVariables.set('sampleJadwalIdPergi', res.data[0]._id);",
+                  "    pm.collectionVariables.set('sampleJadwalIdPulang', res.data[1]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/jadwal",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "jadwal"]
+            }
+          }
+        },
+        {
+          "name": "Cari Jadwal dengan Filter Kota",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/jadwal?kotaAsal=Jakarta&kotaTujuan=Solo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "jadwal"],
+              "query": [
+                { "key": "kotaAsal", "value": "Jakarta" },
+                { "key": "kotaTujuan", "value": "Solo" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detail Jadwal by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/jadwal/{{sampleJadwalIdPergi}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "jadwal", "{{sampleJadwalIdPergi}}"]
+            }
+          }
+        },
+        {
+          "name": "Tambah Jadwal [Admin]",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"busId\": \"{{sampleBusId}}\",\n  \"ruteId\": \"{{sampleRuteId}}\",\n  \"tanggalKeberangkatan\": \"2026-11-30\",\n  \"waktuKeberangkatan\": \"09:00\",\n  \"waktuTiba\": \"17:00\",\n  \"hargaTiket\": 380000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/jadwal",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "jadwal"]
+            }
+          }
+        },
+        {
+          "name": "Perbarui Jadwal [Admin]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hargaTiket\": 375000,\n  \"status\": \"tersedia\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/jadwal/{{sampleJadwalIdPergi}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "jadwal", "{{sampleJadwalIdPergi}}"]
+            }
+          }
+        },
+        {
+          "name": "Hapus Jadwal [Admin]",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/jadwal/{{sampleJadwalIdPergi}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "jadwal", "{{sampleJadwalIdPergi}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Pemesanan Tiket (Booking)",
+      "item": [
+        {
+          "name": "Buat Pemesanan Pulang-Pergi [User]",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data._id) {",
+                  "    pm.collectionVariables.set('samplePemesananId', res.data._id);",
+                  "}",
+                  "if (res.data && res.data.shareTrackingToken) {",
+                  "    pm.collectionVariables.set('sampleTrackingToken', res.data.shareTrackingToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipePerjalanan\": \"pulang_pergi\",\n  \"perjalanan\": [\n    {\n      \"tipe\": \"pergi\",\n      \"jadwalId\": \"{{sampleJadwalIdPergi}}\",\n      \"penumpang\": [\n        {\n          \"namaPenumpang\": \"Rizqi Fajri\",\n          \"nomorIdentitas\": \"1671012510000001\",\n          \"nomorKursi\": 15\n        }\n      ]\n    },\n    {\n      \"tipe\": \"pulang\",\n      \"jadwalId\": \"{{sampleJadwalIdPulang}}\",\n      \"penumpang\": [\n        {\n          \"namaPenumpang\": \"Rizqi Fajri\",\n          \"nomorIdentitas\": \"1671012510000001\",\n          \"nomorKursi\": 15\n        }\n      ]\n    }\n  ],\n  \"metodePembayaran\": \"QRIS\",\n  \"catatan\": \"Perjalanan dinas pulang pergi\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/pemesanan",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pemesanan"]
+            }
+          }
+        },
+        {
+          "name": "Daftar Pemesanan Saya [User]",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pemesanan",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pemesanan"]
+            }
+          }
+        },
+        {
+          "name": "Detail Pemesanan by ID/Kode [User/Admin]",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pemesanan/{{samplePemesananId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pemesanan", "{{samplePemesananId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Status Pembayaran [Admin]",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"statusPembayaran\": \"lunas\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/pemesanan/{{samplePemesananId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pemesanan", "{{samplePemesananId}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Hapus Pemesanan [Admin]",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pemesanan/{{samplePemesananId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pemesanan", "{{samplePemesananId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Share Live Tracking Publik (Fitur GrabFood/Gojek)",
+      "item": [
+        {
+          "name": "Lacak Perjalanan Bus by Token [Publik - Tanpa Login]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tracking/{{sampleTrackingToken}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tracking", "{{sampleTrackingToken}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

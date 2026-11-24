@@ -1,0 +1,13 @@
+const express = require('express');
+const router = express.Router();
+const authController = require('../controllers/authController');
+const verifyToken = require('../middlewares/verifyToken');
+
+// Endpoint Publik
+router.post('/register', authController.register);
+router.post('/login', authController.login);
+
+// Endpoint Terproteksi
+router.get('/me', verifyToken, authController.me);
+
+module.exports = router;
