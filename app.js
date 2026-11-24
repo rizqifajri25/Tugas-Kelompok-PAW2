@@ -57,16 +57,17 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Sajikan file statis (HTML/CSS landing page dan tracking.html uji coba deployment Vercel)
-app.use(express.static(path.join(__dirname, 'public')));
+// Sajikan file statis jika ada (dengan index: false agar route / tetap murni JSON Backend)
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
-// ---------- Healthcheck & API Info ----------
-app.get('/api', (req, res) => {
+// ---------- Healthcheck & API Info (Pure Backend JSON) ----------
+const apiInfoHandler = (req, res) => {
   res.json({
     success: true,
-    message: 'Selamat datang di RESTful API Layanan Tiket Bus Rosalia Indah',
+    message: 'RESTful API Layanan Tiket Bus Rosalia Indah',
     status: 'online',
     version: '1.2.0',
+    mode: 'pure-backend',
     fiturBaru: [
       'Pemesanan Pulang-Pergi (Round-Trip) & Multi-Kota dalam satu transaksi',
       'Live Location Bus (GPS Coordinates Tracking)',
@@ -114,7 +115,10 @@ app.get('/api', (req, res) => {
       },
     },
   });
-});
+};
+
+app.get('/', apiInfoHandler);
+app.get('/api', apiInfoHandler);
 
 // ---------- Route Per Modul ----------
 app.use('/api/auth', authRoutes);
