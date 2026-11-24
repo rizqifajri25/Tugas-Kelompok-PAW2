@@ -230,57 +230,66 @@ Endpoint yang sudah selesai diimplementasikan:
 
 ---
 
-## 8. Spesifikasi Teknis Endpoint API
+## 8. Spesifikasi Teknis Endpoint API (Pure Backend JSON)
 
-### A. Modul Autentikasi (`/api/auth`)
-| Method | URL | Akses | Deskripsi |
-|:---|:---|:---|:---|
-| `POST` | `/api/auth/register` | Publik | Mendaftarkan akun pengguna baru |
-| `POST` | `/api/auth/login` | Publik | Otentikasi username/email & password, mengembalikan token JWT |
-| `GET` | `/api/auth/me` | Bearer Token | Mengambil data profil pengguna yang sedang login |
+Seluruh endpoint di bawah ini dapat diakses menggunakan prefix resmi **`/api`** (contoh: `/api/bus`) maupun alias langsung (contoh: `/bus`) pada domain lokal (`http://localhost:4000`) maupun Vercel (`https://tugas-kelompok-paw-2.vercel.app`).
 
-### B. Modul Armada Bus & Live Location (`/api/bus`)
-| Method | URL | Akses | Deskripsi |
+### A. Info & Healthcheck (Root)
+| Method | URL Path | Hak Akses | Deskripsi & Parameter |
 |:---|:---|:---|:---|
-| `GET` | `/api/bus` | Publik | Mendapatkan seluruh daftar armada bus |
-| `GET` | `/api/bus/:id` | Publik | Mendapatkan detail spesifikasi satu armada bus |
-| `GET` | `/api/bus/:id/lokasi` | Publik | Mendapatkan koordinat GPS lokasi bus terkini & kecepatan |
-| `PUT` | `/api/bus/:id/lokasi` | Admin/Driver | Memperbarui koordinat GPS lokasi bus secara *real-time* |
-| `POST` | `/api/bus` | Admin | Menambahkan unit armada bus baru |
-| `PUT` | `/api/bus/:id` | Admin | Memperbarui spesifikasi bus |
-| `DELETE` | `/api/bus/:id` | Admin | Menghapus unit armada bus |
+| `GET` | `/` | Publik | Menampilkan dokumentasi JSON murni & status online backend (*pure-backend mode*) |
+| `GET` | `/api` | Publik | Menampilkan informasi API, versi rilis (v1.2.0), dan daftar seluruh endpoint |
 
-### C. Modul Rute / Trayek (`/api/rute`)
-| Method | URL | Akses | Deskripsi |
+### B. Modul Autentikasi (`/api/auth`) — SUB-CPMK-10
+| Method | URL Path | Hak Akses | Deskripsi & Contoh Payload |
 |:---|:---|:---|:---|
-| `GET` | `/api/rute` | Publik | Mendapatkan seluruh rute perjalanan antarkota |
-| `GET` | `/api/rute/:id` | Publik | Mendapatkan detail rute berdasarkan ID |
-| `POST` | `/api/rute` | Admin | Menambahkan rute antarkota baru |
+| `POST` | `/api/auth/register` | Publik | Mendaftarkan akun baru. Body: `{ namaLengkap, username, email, nomorTelepon, password, role? }` |
+| `POST` | `/api/auth/login` | Publik | Login pengguna. Body: `{ username, password }` $\rightarrow$ Return: `{ token, user }` |
+| `GET` | `/api/auth/me` | Bearer Token | Mengambil data profil pengguna & masa kedaluwarsa token dari `req.user` |
+
+### C. Modul Armada Bus & Live GPS (`/api/bus`)
+| Method | URL Path | Hak Akses | Deskripsi & Parameter Kueri |
+|:---|:---|:---|:---|
+| `GET` | `/api/bus` | Publik | Mendapatkan seluruh daftar bus. Query: `?kelasBus=...&status=aktif&search=...&page=1&limit=10&sort=-createdAt` |
+| `GET` | `/api/bus/:id` | Publik | Mendapatkan detail spesifikasi satu armada bus berdasarkan ID Mongoose |
+| `GET` | `/api/bus/:id/lokasi` | Publik | **Fitur GPS:** Mendapatkan koordinat `latitude`, `longitude`, `kecepatanKmJam`, dan nama lokasi terkini bus |
+| `PUT` | `/api/bus/:id/lokasi` | Admin / Driver | **Fitur GPS:** Memperbarui lokasi GPS bus. Body: `{ latitude, longitude, namaLokasi, kecepatanKmJam, arahDerajat }` |
+| `POST` | `/api/bus` | Admin | Menambahkan unit bus baru. Body: `{ nomorPolisi, nomorLambung, namaBus, kelasBus, kapasitasKursi, fasilitas }` |
+| `PUT` | `/api/bus/:id` | Admin | Memperbarui data bus berdasarkan ID |
+| `DELETE` | `/api/bus/:id` | Admin | Menghapus unit armada bus dari sistem |
+
+### D. Modul Rute / Trayek Perjalanan (`/api/rute`)
+| Method | URL Path | Hak Akses | Deskripsi & Parameter Kueri |
+|:---|:---|:---|:---|
+| `GET` | `/api/rute` | Publik | Mendapatkan seluruh rute antarkota. Query: `?kotaAsal=Palembang&kotaTujuan=Jakarta&search=...` |
+| `GET` | `/api/rute/:id` | Publik | Mendapatkan detail rute, agen keberangkatan, dan tarif dasar |
+| `POST` | `/api/rute` | Admin | Menambahkan rute antarkota baru. Body: `{ kodeRute, kotaAsal, kotaTujuan, agenKeberangkatan, agenTujuan, jarakKm, estimasiWaktu, tarifDasar }` |
 | `PUT` | `/api/rute/:id` | Admin | Memperbarui informasi rute atau tarif dasar |
 | `DELETE` | `/api/rute/:id` | Admin | Menghapus data rute perjalanan |
 
-### D. Modul Jadwal Keberangkatan (`/api/jadwal`)
-| Method | URL | Akses | Deskripsi |
+### E. Modul Jadwal Keberangkatan (`/api/jadwal`)
+| Method | URL Path | Hak Akses | Deskripsi & Parameter Kueri |
 |:---|:---|:---|:---|
-| `GET` | `/api/jadwal` | Publik | Menampilkan jadwal bus (filter `kotaAsal`, `kotaTujuan`, `tanggal`) |
-| `GET` | `/api/jadwal/:id` | Publik | Menampilkan detail jadwal beserta armada bus dan rutenya |
-| `POST` | `/api/jadwal` | Admin | Menambahkan jadwal keberangkatan baru |
-| `PUT` | `/api/jadwal/:id` | Admin | Memperbarui jadwal keberangkatan |
+| `GET` | `/api/jadwal` | Publik | Menampilkan jadwal bus. Query: `?kotaAsal=Jakarta&kotaTujuan=Solo&tanggal=YYYY-MM-DD` (didukung `populate` bus & rute) |
+| `GET` | `/api/jadwal/:id` | Publik | Menampilkan detail jadwal beserta armada bus dan rute perjalanannya |
+| `POST` | `/api/jadwal` | Admin | Menambahkan jadwal keberangkatan baru. Body: `{ busId, ruteId, tanggalKeberangkatan, waktuKeberangkatan, waktuTiba, hargaTiket }` |
+| `PUT` | `/api/jadwal/:id` | Admin | Memperbarui jam keberangkatan atau status ketersediaan |
 | `DELETE` | `/api/jadwal/:id` | Admin | Menghapus jadwal keberangkatan |
 
-### E. Modul Pemesanan Tiket Pulang-Pergi (`/api/pemesanan`)
-| Method | URL | Akses | Deskripsi |
+### F. Modul Pemesanan Tiket Pulang-Pergi (`/api/pemesanan`) — SUB-CPMK-9
+| Method | URL Path | Hak Akses | Deskripsi & Format Payload |
 |:---|:---|:---|:---|
-| `GET` | `/api/pemesanan` | User / Admin | Mengambil daftar pesanan (User: miliknya; Admin: semua) |
-| `GET` | `/api/pemesanan/:id` | User / Admin | Mengambil detail pesanan berdasarkan ID atau Kode Booking |
-| `POST` | `/api/pemesanan` | User / Admin | Membuat booking tiket (Sekali Jalan, Pulang-Pergi, atau Multi-Kota) |
-| `PUT` | `/api/pemesanan/:id/status` | User / Admin | Mengubah status pembayaran (`menunggu_pembayaran`, `lunas`, `dibatalkan`) |
-| `DELETE` | `/api/pemesanan/:id` | Admin | Menghapus data pemesanan tiket |
+| `GET` | `/api/pemesanan` | User / Admin | Mengambil daftar pesanan (Pelanggan hanya melihat pesanannya; Admin melihat semua pesanan) |
+| `GET` | `/api/pemesanan/:id` | User / Admin | Mengambil detail transaksi berdasarkan ID atau Kode Booking unik (contoh: `RI-20261125-RT01`) |
+| `POST` | `/api/pemesanan` | User / Admin | **Booking Tiket:** Mendukung *Sekali Jalan*, *Pulang-Pergi*, maupun *Multi-Kota*. Otomatis memvalidasi kursi bentrok dan men-generate `shareTrackingToken`. Body: `{ tipePerjalanan, perjalanan: [{ tipe, jadwalId, penumpang: [{ namaPenumpang, nomorIdentitas, nomorKursi }] }], metodePembayaran, catatan }` |
+| `PUT` | `/api/pemesanan/:id/status` | User / Admin | Mengubah status pembayaran (`lunas` atau `dibatalkan` — jika dibatalkan kursi otomatis dipulihkan ke jadwal) |
+| `DELETE` | `/api/pemesanan/:id` | Admin | Menghapus data transaksi pemesanan |
 
-### F. Modul Share Live Tracking Publik (`/api/tracking`)
-| Method | URL | Akses | Deskripsi |
+### G. Modul Share Live Tracking Publik (`/api/tracking`) — Fitur GrabFood
+| Method | URL Path | Hak Akses | Deskripsi & Tautan Peta |
 |:---|:---|:---|:---|
-| `GET` | `/api/tracking/:token` | Publik (Tanpa Login) | Mendapatkan data pelacakan perjalanan bus secara publik tanpa membuka data pribadi/NIK penumpang |
+| `GET` | `/api/tracking/:token` | Publik (Tanpa Login) | Mengambil data live tracking bus via token share acak (contoh: `trk_demo_rosalia2026`). Data NIK/KTP penumpang disembunyikan demi keamanan privasi |
+| `GET` | `/tracking.html?token=:token` | Browser | Membuka peta interaktif Leaflet.js & OpenStreetMap untuk melihat pergerakan bus secara visual |
 
 ---
 
