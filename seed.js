@@ -8,7 +8,7 @@ const Jadwal = require('./models/jadwalModel');
 const Pemesanan = require('./models/pemesananModel');
 
 async function seedData() {
-  console.log('Memulai proses seeding data Rosalia Indah (dengan Live Location & Pulang-Pergi)...');
+  console.log('Memulai proses seeding data Rosalia Indah ke MongoDB Atlas Cloud...');
   await connectDB();
 
   // Bersihkan data lama
@@ -19,9 +19,9 @@ async function seedData() {
     Jadwal.deleteMany({}),
     Pemesanan.deleteMany({}),
   ]);
-  console.log('Data lama pada seluruh koleksi berhasil dibersihkan.');
+  console.log('✓ Data lama pada seluruh koleksi di Atlas berhasil dibersihkan.');
 
-  // 1. Seed Pengguna (Admin & Pelanggan)
+  // 1. Seed Pengguna (Admin & Pelanggan Anggota Kelompok)
   const passwordHashAdmin = await bcrypt.hash('admin123', 10);
   const passwordHashUser = await bcrypt.hash('password123', 10);
 
@@ -67,7 +67,7 @@ async function seedData() {
       role: 'user',
     },
   ]);
-  console.log('✓ 5 User (1 Admin, 4 Pelanggan Anggota Kelompok) berhasil dibuat.');
+  console.log('✓ 5 User (1 Admin, 4 Pelanggan Anggota Kelompok) berhasil dibuat di Atlas.');
 
   // 2. Seed Armada Bus Rosalia Indah (dengan Koordinat GPS Live Location)
   const buses = await Bus.insertMany([
@@ -140,7 +140,7 @@ async function seedData() {
       },
     },
   ]);
-  console.log(`✓ ${buses.length} Armada Bus Rosalia Indah dengan GPS Live Location berhasil dibuat.`);
+  console.log(`✓ ${buses.length} Armada Bus Rosalia Indah dengan GPS Live Location berhasil dibuat di Atlas.`);
 
   // 3. Seed Rute / Trayek Perjalanan
   const rutes = await Rute.insertMany([
@@ -185,7 +185,7 @@ async function seedData() {
       tarifDasar: 380000,
     },
   ]);
-  console.log(`✓ ${rutes.length} Rute perjalanan berhasil dibuat.`);
+  console.log(`✓ ${rutes.length} Rute perjalanan berhasil dibuat di Atlas.`);
 
   // 4. Seed Jadwal Keberangkatan (Besok dan Lusa)
   const besok = new Date();
@@ -242,7 +242,7 @@ async function seedData() {
       status: 'tersedia',
     },
   ]);
-  console.log(`✓ ${jadwals.length} Jadwal keberangkatan (termasuk jadwal pulang) berhasil dibuat.`);
+  console.log(`✓ ${jadwals.length} Jadwal keberangkatan berhasil dibuat di Atlas.`);
 
   // 5. Seed Pemesanan Pulang-Pergi dengan Share Live Tracking Token
   const demoTrackingToken = 'trk_demo_rosalia2026';
@@ -257,7 +257,7 @@ async function seedData() {
         jadwalId: jadwals[0]._id, // JKT-SLO
         penumpang: [
           { namaPenumpang: 'Rizqi Fajri Sya\'ban', nomorIdentitas: '1671012510000001', nomorKursi: 1 },
-          { namaPenumpang: 'Fito Maulana', nomorIdentitas: '1671012510000002', nomorKursi: 2 },
+          { namaPenumpang: 'Mikhael Vito Wicaksono', nomorIdentitas: '1671012510000002', nomorKursi: 2 },
         ],
         subtotal: 780000,
       },
@@ -266,7 +266,7 @@ async function seedData() {
         jadwalId: jadwals[1]._id, // SLO-JKT
         penumpang: [
           { namaPenumpang: 'Rizqi Fajri Sya\'ban', nomorIdentitas: '1671012510000001', nomorKursi: 1 },
-          { namaPenumpang: 'Fito Maulana', nomorIdentitas: '1671012510000002', nomorKursi: 2 },
+          { namaPenumpang: 'Mikhael Vito Wicaksono', nomorIdentitas: '1671012510000002', nomorKursi: 2 },
         ],
         subtotal: 580000,
       },
@@ -274,7 +274,7 @@ async function seedData() {
     jadwalId: jadwals[0]._id,
     penumpang: [
       { namaPenumpang: 'Rizqi Fajri Sya\'ban', nomorIdentitas: '1671012510000001', nomorKursi: 1 },
-      { namaPenumpang: 'Fito Maulana', nomorIdentitas: '1671012510000002', nomorKursi: 2 },
+      { namaPenumpang: 'Mikhael Vito Wicaksono', nomorIdentitas: '1671012510000002', nomorKursi: 2 },
     ],
     totalHarga: 1360000,
     metodePembayaran: 'QRIS',
@@ -284,13 +284,13 @@ async function seedData() {
 
   console.log(`✓ 1 Pemesanan Pulang-Pergi dibuat dengan kode: ${pemesanan1.kodeBooking}`);
   console.log(`✓ Token Share Live Tracking Publik: ${demoTrackingToken}`);
-  console.log(`✓ Buka di browser untuk melihat peta: http://localhost:4000/tracking.html?token=${demoTrackingToken}`);
+  console.log(`✓ DATABASE MONGODB ATLAS CLOUD TELAH TERISI LENGKAP & SIAP UNTUK VERCEL!`);
 
-  console.log('--- SEEDING SELESAI DENGAN SUKSES ---');
+  console.log('--- SEEDING ATLAS SELESAI DENGAN SUKSES ---');
   process.exit(0);
 }
 
 seedData().catch((err) => {
-  console.error('Terjadi kesalahan saat seeding:', err);
+  console.error('Terjadi kesalahan saat seeding ke Atlas:', err);
   process.exit(1);
 });
